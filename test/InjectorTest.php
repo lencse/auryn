@@ -1194,4 +1194,26 @@ class InjectorTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('Auryn\Test\DelegateA', $a->a);
         $this->assertInstanceOf('Auryn\Test\DelegateB', $b->b);
     }
+
+    public function testMakeDefaultWhenThereIsAnException()
+    {
+        $injector = new Injector;
+        try {
+            $a = $injector->make(ClassWithExceptionInConstructor::class);
+        } catch (\Exception $e) {
+            $this->assertEquals('Exception', $e->getMessage());
+            $a = ClassWithExceptionInConstructor::createDefault();
+        }
+
+        try {
+            $b = $injector->make(ClassWithExceptionInConstructor::class);
+        } catch (\Exception $e) {
+            $this->assertEquals('Exception', $e->getMessage());
+            $this->assertNotEquals(
+                'Detected a cyclic dependency while provisioning ' . ClassWithExceptionInConstructor::class,
+                $e->getMessage()
+            );
+            $b = ClassWithExceptionInConstructor::createDefault();
+        }
+    }
 }

@@ -354,31 +354,33 @@ class Injector
 
         $this->inProgressMakes[$normalizedClass] = count($this->inProgressMakes);
 
-        // isset() is used specifically here because classes may be marked as "shared" before an
-        // instance is stored. In these cases the class is "shared," but it has a null value and
-        // instantiation is needed.
-        if (isset($this->shares[$normalizedClass])) {
+        try {
+            // isset() is used specifically here because classes may be marked as "shared" before an
+            // instance is stored. In these cases the class is "shared," but it has a null value and
+            // instantiation is needed.
+            if (isset($this->shares[$normalizedClass])) {
+                unset($this->inProgressMakes[$normalizedClass]);
+
+                return $this->shares[$normalizedClass];
+            }
+
+            if (isset($this->delegates[$normalizedClass])) {
+                $executable = $this->buildExecutable($this->delegates[$normalizedClass]);
+                $reflectionFunction = $executable->getCallableReflection();
+                $args = $this->provisionFuncArgs($reflectionFunction, $args);
+                $obj = call_user_func_array(array($executable, '__invoke'), $args);
+            } else {
+                $obj = $this->provisionInstance($className, $normalizedClass, $args);
+            }
+
+            $obj = $this->prepareInstance($obj, $normalizedClass);
+
+            if (array_key_exists($normalizedClass, $this->shares)) {
+                $this->shares[$normalizedClass] = $obj;
+            }
+        } finally {
             unset($this->inProgressMakes[$normalizedClass]);
-
-            return $this->shares[$normalizedClass];
         }
-
-        if (isset($this->delegates[$normalizedClass])) {
-            $executable = $this->buildExecutable($this->delegates[$normalizedClass]);
-            $reflectionFunction = $executable->getCallableReflection();
-            $args = $this->provisionFuncArgs($reflectionFunction, $args);
-            $obj = call_user_func_array(array($executable, '__invoke'), $args);
-        } else {
-            $obj = $this->provisionInstance($className, $normalizedClass, $args);
-        }
-
-        $obj = $this->prepareInstance($obj, $normalizedClass);
-
-        if (array_key_exists($normalizedClass, $this->shares)) {
-            $this->shares[$normalizedClass] = $obj;
-        }
-
-        unset($this->inProgressMakes[$normalizedClass]);
 
         return $obj;
     }

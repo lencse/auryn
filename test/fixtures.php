@@ -727,3 +727,17 @@ class DelegatingInstanceB {
         $this->b = $b;
     }
 }
+
+class ClassWithExceptionInConstructor {
+    public function __construct($param = null)
+    {
+        if (null === $param) {
+            throw new \Exception('Exception');
+        }
+    }
+
+    public static function createDefault()
+    {
+        return new self(1);
+    }
+}
