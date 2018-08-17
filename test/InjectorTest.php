@@ -1199,14 +1199,14 @@ class InjectorTest extends \PHPUnit_Framework_TestCase
     {
         $injector = new Injector;
         try {
-            $a = $injector->make(ClassWithExceptionInConstructor::class);
+            $a = $injector->make('Auryn\Test\ClassWithExceptionInConstructor');
         } catch (\Exception $e) {
             $this->assertEquals('Exception', $e->getMessage());
             $a = ClassWithExceptionInConstructor::createDefault();
         }
 
         try {
-            $b = $injector->make(ClassWithExceptionInConstructor::class);
+            $b = $injector->make('Auryn\Test\ClassWithExceptionInConstructor');
         } catch (\Exception $e) {
             $this->assertEquals('Exception', $e->getMessage());
             $this->assertNotEquals(

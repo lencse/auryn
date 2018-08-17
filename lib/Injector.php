@@ -378,6 +378,8 @@ class Injector
             if (array_key_exists($normalizedClass, $this->shares)) {
                 $this->shares[$normalizedClass] = $obj;
             }
+        } catch (\Exception $e) {
+            throw $e;
         } finally {
             unset($this->inProgressMakes[$normalizedClass]);
         }
